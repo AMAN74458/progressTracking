@@ -7,7 +7,6 @@ from PyQt5.QtGui import *
 from cardsUI import cards
 from PyQt5 import *
 
-
 import sys
 
 class MainWindow(QMainWindow):
@@ -21,12 +20,24 @@ class MainWindow(QMainWindow):
         self.offset = None
 
         self.initialHomeLayout = QStackedLayout()
-        self.subVerLayout = QVBoxLayout()
-        self.initialHomeWidgets = QWidget()
-        self.initialHomeWidgets.setLayout(self.initialHomeLayout)
-        self.setCentralWidget(self.initialHomeWidgets)
+        self.initHome = QWidget()
+        self.cards = QWidget()
+        
         self.initHomeUI()
-        self.closMinMax()
+        currWidgetInstance = self.initHome
+        self.closMinMax(currWidgetInstance)
+        
+        self.fromCardsBackButton = cards.cardsUI(self)
+        currWidgetInstance = self.cards
+        self.closMinMax(currWidgetInstance)
+        
+        self.initHome.setFixedSize(980, 700)
+        self.cards.setFixedSize(980, 700)
+        
+        print(self.cards.size())
+        
+        self.initialHomeLayout.addWidget(self.initHome)
+        self.initialHomeLayout.addWidget(self.cards)
 
 
     # creating rectangle to mask it to give round borders for main-window
@@ -40,16 +51,17 @@ class MainWindow(QMainWindow):
         self.setMask(mask)
     
     # close, minimize, maximize icon fun
-    def closMinMax(self):
+    def closMinMax(self, currWidgetInstance):
         print("I am Called")
         # btnClose, btnMin, btnMax always be active 
-        btnClose = QPushButton("X", self)
+        # a = self.initHome
+        btnClose = QPushButton("X", currWidgetInstance)
         btnClose.setGeometry(15, 15, 13, 13)
         btnClose.setFont(QFont("Alegreya Sans",9))
         btnClose.setStyleSheet("QPushButton {border-radius : 6; background-color: #FF605C;} QPushButton::pressed {background-color: #9c0400}")
         btnClose.clicked.connect(self.onClickClose)
         
-        btnMin = QPushButton("", self)
+        btnMin = QPushButton("", currWidgetInstance)
         btnMin.setGeometry(35, 15, 13, 13)
         btnMin.setFont(QFont("Alegreya Sans",10))
         btnMin.setStyleSheet("border-radius : 6; background-color: grey;")
@@ -57,7 +69,7 @@ class MainWindow(QMainWindow):
         #issue 2021-0A2 btnMin
         # btnMin.clicked.connect(self.onClickMin)
         
-        btnMax = QPushButton("", self)
+        btnMax = QPushButton("", currWidgetInstance)
         btnMax.setGeometry(55, 15, 13, 13)
         btnMax.setFont(QFont("",10))
         btnMax.setStyleSheet("border-radius : 6; background-color: grey;")
@@ -65,20 +77,17 @@ class MainWindow(QMainWindow):
     # begining UI 
     def initHomeUI(self):
 
-        brandName = QLabel("Progress Tracker")
+        brandName = QLabel("Progress Tracker", self.initHome)
         brandName.setStyleSheet("color: #dadadb;")
         brandName.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
         brandName.setFont(QFont("Alegreya Sans", 80, 120))
-        brandName.setFixedSize(600,100)
-        brandName.move(190,250)
-        self.subVerLayout.addWidget(brandName)
+        brandName.setGeometry(QRect(190, 250, 600, 100))
 
-        btnStart = QPushButton("Let's Track", self)
+        btnStart = QPushButton("Let's Track", self.initHome)
         btnStart.setFont(QFont("Alegreya Sans", 24, 60))
         btnStart.setFixedSize(160,60)
         btnStart.setStyleSheet("QPushButton {border-radius : 30; background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 white, stop: 0 #facb40, stop:1 #f9a407); color: #0b0d0f} QPushButton::pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop: 0 #efb506, stop: 1 #b67804);}")
         btnStart.move(410,373)
-        self.subVerLayout.addWidget(btnStart)
 
         btnStartShadow = QGraphicsDropShadowEffect()
         btnStartShadow.setBlurRadius(75)
@@ -87,32 +96,26 @@ class MainWindow(QMainWindow):
         btnStart.setGraphicsEffect(btnStartShadow)
         btnStart.clicked.connect(self.letsTrack)
 
-        self.initialHomeLayout.addChildLayout(self.subVerLayout)
-
-        cpyRgt = QLabel("created by Aman Kumar (Open Source Project)", self)
+        cpyRgt = QLabel("created by Aman Kumar (Open Source Project)", self.initHome)
         cpyRgt.setFont(QFont("Alegreya Sans", 15))
         cpyRgt.setStyleSheet("color: #7d7f82;")
         cpyRgt.setAlignment(Qt.AlignCenter)
         cpyRgt.setFixedWidth(600)
         cpyRgt.move(190,662)
 
-
-    def delLayout(self):
-        while self.subVerLayout.count():
-            item = self.subVerLayout.itemAt(0)
-            if item != None :
-                widget = item.widget()
-                if widget != None:
-                    self.subVerLayout.removeWidget(widget)
-                    widget.deleteLater()  
-            print("Delteing Layer: Completed")  
+        self.setCentralWidget(self.initHome) 
 
     # on click letsTrack execute this
     def letsTrack(self):
         print("letsStart Button: Pressed")
-        self.delLayout()
-        Currlay = cards.cardsUI(self)
-        self.initialHomeLayout.addChildLayout(Currlay)
+        self.setCentralWidget(self.cards)
+        self.initialHomeLayout.setCurrentIndex(1)
+        self.fromCardsBackButton.clicked.connect(self.goBackCards)
+    
+    # action method Go Back button is placed in CardsUI
+    def goBackCards(self):
+        print("GO BACK: Pressed")
+        self.initialHomeLayout.setCurrentIndex(0)
 
     # action method
     def onClickClose(self):
