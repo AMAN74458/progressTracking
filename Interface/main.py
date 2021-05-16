@@ -4,7 +4,8 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-from cardsUI import cards
+from cardsUI import cards, cardsAnimated
+from progressWinUI import progressWin
 from PyQt5 import *
 
 import sys
@@ -14,31 +15,37 @@ class MainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
 
+        print("\nUI -----> STARTING\n")
         # removing default title bar containg close, min-max button
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         self.roundCorners()
         self.offset = None
 
-        self.initialHomeLayout = QStackedLayout()
-        self.initHome = QWidget()
-        self.cards = QWidget()
+        self.initialHomeLayout = QVBoxLayout()
+        self.initialHomeStackedWidget = QStackedWidget()
+        self.initHomeWidg = QWidget()
+        self.cardsWidg = QWidget()
+        self.progressWinWidg = QWidget()
         
         self.initHomeUI()
-        currWidgetInstance = self.initHome
-        self.closMinMax(currWidgetInstance)
+        self.closMinMax(self.initHomeWidg)
         
-        self.fromCardsBackButton = cards.cardsUI(self)
-        currWidgetInstance = self.cards
-        self.closMinMax(currWidgetInstance)
-        
-        self.initHome.setFixedSize(980, 700)
-        self.cards.setFixedSize(980, 700)
-        
-        print(self.cards.size())
-        
-        self.initialHomeLayout.addWidget(self.initHome)
-        self.initialHomeLayout.addWidget(self.cards)
+        self.fromCards = cards.cardsUI(self)
+        self.closMinMax(self.cardsWidg)
+        self.cardBtnConnection()
 
+        self.fromProgressWin = progressWin.progressWinUI(self)
+        self.closMinMax(self.progressWinWidg)
+        self.progressWinBtnConnection()
+
+        self.initialHomeStackedWidget.addWidget(self.initHomeWidg)
+        self.initialHomeStackedWidget.addWidget(self.cardsWidg)
+        self.initialHomeStackedWidget.addWidget(self.progressWinWidg)
+
+        self.initialHomeLayout.addWidget(self.initialHomeStackedWidget)
+        self.setCentralWidget(self.initialHomeStackedWidget)
+
+        print("\nUI -----> LIVE\n")
 
     # creating rectangle to mask it to give round borders for main-window
     # issue 2021-0A1 [not smooth round bounders, Antialising not work on this]
@@ -51,10 +58,9 @@ class MainWindow(QMainWindow):
         self.setMask(mask)
     
     # close, minimize, maximize icon fun
+    # btnClose, btnMin, btnMax always be active 
     def closMinMax(self, currWidgetInstance):
-        print("I am Called")
-        # btnClose, btnMin, btnMax always be active 
-        # a = self.initHome
+        print("closeMinMax ----> Called for current widget ==== [WORKING PERFECT]")
         btnClose = QPushButton("X", currWidgetInstance)
         btnClose.setGeometry(15, 15, 13, 13)
         btnClose.setFont(QFont("Alegreya Sans",9))
@@ -73,20 +79,43 @@ class MainWindow(QMainWindow):
         btnMax.setGeometry(55, 15, 13, 13)
         btnMax.setFont(QFont("",10))
         btnMax.setStyleSheet("border-radius : 6; background-color: grey;")
+        #issue 2021-0A3 btnMax
+        # btnMax.clicked.connect(self.showFullScreen)
 
     # begining UI 
     def initHomeUI(self):
+        
+        # working icon
+        icon1Label = QLabel(self.initHomeWidg)
+        icon1Label.setGeometry(QRect(406, 550, 50, 50))
+        icon1 = QMovie("icons/write50x50.gif")
+        icon1Label.setMovie(icon1)
+        icon1.start()
 
-        brandName = QLabel("Progress Tracker", self.initHome)
+        # working icon
+        icon2Label = QLabel(self.initHomeWidg)
+        icon2Label.setGeometry(QRect(466, 530, 50, 50))
+        icon2 = QMovie("icons/listToTrack50x50.gif")
+        icon2Label.setMovie(icon2)
+        icon2.start()
+
+        # working icon
+        icon3Label = QLabel(self.initHomeWidg)
+        icon3Label.setGeometry(QRect(526, 555, 50, 50))
+        icon3 = QMovie("icons/completedNotCompleted50x50.gif")
+        icon3Label.setMovie(icon3)
+        icon3.start()
+
+        brandName = QLabel("Progress Tracker", self.initHomeWidg)
         brandName.setStyleSheet("color: #dadadb;")
         brandName.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
         brandName.setFont(QFont("Alegreya Sans", 80, 120))
         brandName.setGeometry(QRect(190, 250, 600, 100))
 
-        btnStart = QPushButton("Let's Track", self.initHome)
+        btnStart = QPushButton("Let's Track", self.initHomeWidg)
         btnStart.setFont(QFont("Alegreya Sans", 24, 60))
         btnStart.setFixedSize(160,60)
-        btnStart.setStyleSheet("QPushButton {border-radius : 30; background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 white, stop: 0 #facb40, stop:1 #f9a407); color: #0b0d0f} QPushButton::pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop: 0 #efb506, stop: 1 #b67804);}")
+        btnStart.setStyleSheet("QPushButton {border-radius : 6; background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 white, stop: 0 #facb40, stop:1 #f9a407); color: #0b0d0f} QPushButton::pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop: 0 #efb506, stop: 1 #b67804);}")
         btnStart.move(410,373)
 
         btnStartShadow = QGraphicsDropShadowEffect()
@@ -96,33 +125,42 @@ class MainWindow(QMainWindow):
         btnStart.setGraphicsEffect(btnStartShadow)
         btnStart.clicked.connect(self.letsTrack)
 
-        cpyRgt = QLabel("created by Aman Kumar (Open Source Project)", self.initHome)
+        cpyRgt = QLabel("created by Aman Kumar (Open Source Project)", self.initHomeWidg)
         cpyRgt.setFont(QFont("Alegreya Sans", 15))
         cpyRgt.setStyleSheet("color: #7d7f82;")
         cpyRgt.setAlignment(Qt.AlignCenter)
         cpyRgt.setFixedWidth(600)
         cpyRgt.move(190,662)
-
-        self.setCentralWidget(self.initHome) 
+    
+    # action method
+    def cardBtnConnection(self):
+        self.fromCards[4].clicked.connect(lambda: self.goBack())
+        self.fromCards[0].clicked.connect(lambda: self.initialHomeStackedWidget.setCurrentWidget(self.progressWinWidg))
+    
+    # action method
+    def progressWinBtnConnection(self):
+        self.fromProgressWin[1].clicked.connect(lambda: self.goBack())
+    
+    # issue 2021-0A4 calling one time but printing value increment by one always 
+    def goBack(self):
+        print("GO BACK: Pressed -----> Going Back ==== [WORKING PERFECT]")
+        self.currentIndex = self.initialHomeStackedWidget.currentIndex()
+        self.currentIndex -= 1
+        self.initialHomeStackedWidget.setCurrentIndex(self.currentIndex)
 
     # on click letsTrack execute this
     def letsTrack(self):
-        print("letsStart Button: Pressed")
-        self.setCentralWidget(self.cards)
-        self.initialHomeLayout.setCurrentIndex(1)
-        self.fromCardsBackButton.clicked.connect(self.goBackCards)
-    
-    # action method Go Back button is placed in CardsUI
-    def goBackCards(self):
-        print("GO BACK: Pressed")
-        self.initialHomeLayout.setCurrentIndex(0)
+        print("LetsStart Button: Pressed -----> Start Displaying next UI ==== [WORKING PERFECT]")
+        self.initialHomeStackedWidget.setCurrentWidget(self.cardsWidg)
+        cardsAnimated.animateCardsBtn(self)
 
     # action method
     def onClickClose(self):
-        print("Closed Button: Pressed")
+        print("\nClosed Button: Pressed ----> Closing Window *********")
         self.close()
+        print("----------> Windows Closed ==== [WORKING PERFECT]\n")
 
-    
+
     #issue 2021-0A2 
     # def onClickMin(self):
     #     print("Minimized Pressed")
@@ -140,7 +178,7 @@ class MainWindow(QMainWindow):
 progressTrackerApp = QApplication([])
 
 window = MainWindow()
-window.setStyleSheet("background-color: #0a0912;")
+window.setStyleSheet("background-color: #070708;")
 window.setFixedSize(980,700)
 window.show() # window is hidden by default so we have to show it
 
