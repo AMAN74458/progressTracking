@@ -1,9 +1,10 @@
 # developed by Aman Kumar [LPU] => Progress Tracker V-0.01
-#main interface
+# main interface
 
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
+from globalUI import globalUIView
 from cardsUI import cards, cardsAnimated
 from progressWinUI import progressWin
 from PyQt5 import *
@@ -16,9 +17,12 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__(*args, **kwargs)
 
         print("\nUI -----> STARTING\n")
+        
+        self.width = 980
+        self.height = 700
         # removing default title bar containg close, min-max button
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
-        self.roundCorners()
+        globalUIView.roundCorners(self, self.width, self.height)
         self.offset = None
 
         self.initialHomeLayout = QVBoxLayout()
@@ -28,15 +32,13 @@ class MainWindow(QMainWindow):
         self.progressWinWidg = QWidget()
         
         self.initHomeUI()
-        self.closMinMax(self.initHomeWidg)
+        globalUIView.closMinMax(self, self.initHomeWidg, True)
         
-        self.fromCards = cards.cardsUI(self)
-        self.closMinMax(self.cardsWidg)
-        self.cardBtnConnection()
+        cards.cardsUI(self, self.initialHomeStackedWidget)
+        globalUIView.closMinMax(self, self.cardsWidg, True)
 
-        self.fromProgressWin = progressWin.progressWinUI(self)
-        self.closMinMax(self.progressWinWidg)
-        self.progressWinBtnConnection()
+        progressWin.progressWinUI(self, self.initialHomeStackedWidget)
+        globalUIView.closMinMax(self, self.progressWinWidg, True)
 
         self.initialHomeStackedWidget.addWidget(self.initHomeWidg)
         self.initialHomeStackedWidget.addWidget(self.cardsWidg)
@@ -46,41 +48,6 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.initialHomeStackedWidget)
 
         print("\nUI -----> LIVE\n")
-
-    # creating rectangle to mask it to give round borders for main-window
-    # issue 2021-0A1 [not smooth round bounders, Antialising not work on this]
-    def roundCorners(self):
-        self.setFixedSize(980, 700)
-        radius = 10
-        path = QtGui.QPainterPath()
-        path.addRoundedRect(QtCore.QRectF(self.rect()), radius, radius)
-        mask = QtGui.QRegion(path.toFillPolygon().toPolygon())
-        self.setMask(mask)
-    
-    # close, minimize, maximize icon fun
-    # btnClose, btnMin, btnMax always be active 
-    def closMinMax(self, currWidgetInstance):
-        print("closeMinMax ----> Called for current widget ==== [WORKING PERFECT]")
-        btnClose = QPushButton("X", currWidgetInstance)
-        btnClose.setGeometry(15, 15, 13, 13)
-        btnClose.setFont(QFont("Alegreya Sans",9))
-        btnClose.setStyleSheet("QPushButton {border-radius : 6; background-color: #FF605C;} QPushButton::pressed {background-color: #9c0400}")
-        btnClose.clicked.connect(self.onClickClose)
-        
-        btnMin = QPushButton("", currWidgetInstance)
-        btnMin.setGeometry(35, 15, 13, 13)
-        btnMin.setFont(QFont("Alegreya Sans",10))
-        btnMin.setStyleSheet("border-radius : 6; background-color: grey;")
-        # btnMin.setStyleSheet("QPushButton {border-radius : 6; background-color: #FFBD44;} QPushButton::pressed {background-color: #fca300}")
-        #issue 2021-0A2 btnMin
-        # btnMin.clicked.connect(self.onClickMin)
-        
-        btnMax = QPushButton("", currWidgetInstance)
-        btnMax.setGeometry(55, 15, 13, 13)
-        btnMax.setFont(QFont("",10))
-        btnMax.setStyleSheet("border-radius : 6; background-color: grey;")
-        #issue 2021-0A3 btnMax
-        # btnMax.clicked.connect(self.showFullScreen)
 
     # begining UI 
     def initHomeUI(self):
@@ -133,43 +100,19 @@ class MainWindow(QMainWindow):
         cpyRgt.move(190,662)
     
     # action method
-    def cardBtnConnection(self):
-        self.fromCards[4].clicked.connect(lambda: self.goBack())
-        self.fromCards[0].clicked.connect(lambda: self.initialHomeStackedWidget.setCurrentWidget(self.progressWinWidg))
-    
-    # action method
-    def progressWinBtnConnection(self):
-        self.fromProgressWin[1].clicked.connect(lambda: self.goBack())
-    
-    # issue 2021-0A4 calling one time but printing value increment by one always 
-    def goBack(self):
+    def goBack(self, allow):
         print("GO BACK: Pressed -----> Going Back ==== [WORKING PERFECT]")
         self.currentIndex = self.initialHomeStackedWidget.currentIndex()
         self.currentIndex -= 1
         self.initialHomeStackedWidget.setCurrentIndex(self.currentIndex)
+        if(allow):
+            cardsAnimated.animateCardsBtn(self)
 
     # on click letsTrack execute this
     def letsTrack(self):
         print("LetsStart Button: Pressed -----> Start Displaying next UI ==== [WORKING PERFECT]")
         self.initialHomeStackedWidget.setCurrentWidget(self.cardsWidg)
         cardsAnimated.animateCardsBtn(self)
-
-    # action method
-    def onClickClose(self):
-        print("\nClosed Button: Pressed ----> Closing Window *********")
-        self.close()
-        print("----------> Windows Closed ==== [WORKING PERFECT]\n")
-
-
-    #issue 2021-0A2 
-    # def onClickMin(self):
-    #     print("Minimized Pressed")
-    #     self.showMinimized()
-
-    # this feature is not available now [maybe later available]
-    # def onClickMax(self):
-        # print("Maximized Pressed")
-        # self.showMaximized()
 
 
 #You need one(and only one) QApplication instance per application.
