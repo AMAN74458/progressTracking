@@ -81,8 +81,6 @@ class progressWin(QMainWindow):
         input0.move(98, 160)
         # border is removed in stylesheet it depends on OS which color it will show as a focus 
         input0.setStyleSheet("QLineEdit {color: #dadadb;} QLineEdit:focus {border: 0}")
-        progressWin.step1(self, buttonStep1, buttonStep2, buttonStep3, addTrackDialogsWidget)
-        progressWin.nextBtnDialog(self, buttonStep1, buttonStep2, buttonStep3, stepOneWidget, addTrackDialogs, addTrackDialogsWidget, posX1 = 118, posX2 = 235, posY = 240)
 
         input1Label = QLabel("Enter Date(DDMMYYYY): ", stepTwoWidget)
         input1Label.setStyleSheet("color: #dadadb;")
@@ -98,7 +96,6 @@ class progressWin(QMainWindow):
         input1.move(98, 160)
         # border is removed in stylesheet it depends on OS which color it will show as a focus 
         input1.setStyleSheet("QLineEdit {color: #dadadb;} QLineEdit:focus {border: 0}")
-        progressWin.nextBtnDialog(self, buttonStep1, buttonStep2, buttonStep3, stepTwoWidget, addTrackDialogs, addTrackDialogsWidget, posX1 = 118, posX2 = 235, posY = 240)
 
         input2Label = QLabel("How many times you want to\nrepeat it in a day: ", stepThreeWidget)
         input2Label.setStyleSheet("color: #dadadb;")
@@ -114,7 +111,12 @@ class progressWin(QMainWindow):
         input2.move(98, 180)
         # border is removed in stylesheet it depends on OS which color it will show as a focus 
         input2.setStyleSheet("QLineEdit {color: #dadadb;} QLineEdit:focus {border: 0}")
-        progressWin.nextBtnDialog(self, buttonStep1, buttonStep2, buttonStep3, stepThreeWidget, addTrackDialogs, addTrackDialogsWidget, posX1 = 118, posX2 = 235, posY = 250)
+
+        progressWin.step1(self, buttonStep1, buttonStep2, buttonStep3, addTrackDialogsWidget)
+        progressWin.nextBtnDialog(self, buttonStep1, buttonStep2, buttonStep3, stepOneWidget, addTrackDialogs, addTrackDialogsWidget, input0, input1, input2, posX1 = 118, posX2 = 235, posY = 240)
+        progressWin.nextBtnDialog(self, buttonStep1, buttonStep2, buttonStep3, stepTwoWidget, addTrackDialogs, addTrackDialogsWidget, input0, input1, input2, posX1 = 118, posX2 = 235, posY = 240)
+        progressWin.nextBtnDialog(self, buttonStep1, buttonStep2, buttonStep3, stepThreeWidget, addTrackDialogs, addTrackDialogsWidget, input0, input1, input2, posX1 = 118, posX2 = 235, posY = 250)
+        progressWin.getTexts(self, input0, input1, input2)
 
         addTrackDialogs.setStyleSheet("background-color: #202025;")
         addTrackDialogs.exec_()
@@ -143,7 +145,7 @@ class progressWin(QMainWindow):
 
         addTrackDialogsWidget.setCurrentIndex(2)
 
-    def nextBtnDialog(self, buttonStep1, buttonStep2, buttonStep3, currentWidget, addTrackDialogs, addTrackDialogsWidget, posX1, posX2, posY):
+    def nextBtnDialog(self, buttonStep1, buttonStep2, buttonStep3, currentWidget, addTrackDialogs, addTrackDialogsWidget, input0, input1, input2, posX1, posX2, posY):
         print("Showing Cancel and Done buttons -----> [WORKING PERFECTLY]")
 
         cancelBtn = QPushButton("Cancel", currentWidget)
@@ -158,13 +160,13 @@ class progressWin(QMainWindow):
         nextBtn.setStyleSheet("QPushButton {text-align: center; background-color: #facb40; border-radius : 6;}")
         nextBtn.setFixedSize(90, 30)
         nextBtn.move(posX2, posY)
-        nextBtn.clicked.connect(lambda: progressWin.nextPageDialog(self, buttonStep1, buttonStep2, buttonStep3, addTrackDialogsWidget))
+        nextBtn.clicked.connect(lambda: progressWin.nextPageDialog(self, buttonStep1, buttonStep2, buttonStep3, addTrackDialogsWidget, input0, input1, input2))
     
     def closeDialog(self, addTrackDialogs):
         print("\nCancel Button Pressed -----> Closed [WORKING PERFECTLY]\n")
         addTrackDialogs.close()
 
-    def nextPageDialog(self, buttonStep1, buttonStep2, buttonStep3, addTrackDialogsWidget):
+    def nextPageDialog(self, buttonStep1, buttonStep2, buttonStep3, addTrackDialogsWidget, input0, input1, input2):
         limit = addTrackDialogsWidget.count()
         currentIdx = addTrackDialogsWidget.currentIndex()
         currentIdx += 1 
@@ -173,9 +175,14 @@ class progressWin(QMainWindow):
             # addTrackDialogsWidget.setCurrentIndex(currentIdx)
             if currentIdx == 1:
                 progressWin.step2(self, buttonStep1, buttonStep2, buttonStep3, addTrackDialogsWidget)
+                progressWin.getTexts(self, input0, input1, input2)
+
             if currentIdx == 2:
                 progressWin.step3(self, buttonStep1, buttonStep2, buttonStep3, addTrackDialogsWidget)
+                progressWin.getTexts(self, input0, input1, input2)
 
-
-
+    def getTexts(self, input0, input1, input2):
+        print("\nFirst Input Text == " + input0.text())
+        print("Second Input Text == " + input1.text())
+        print("Third Input Text == " + input2.text())
 
