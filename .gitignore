@@ -1,0 +1,11 @@
+/.DS_Store
+/.vscode
+/Testing
+/icons/.DS_Store
+/icons/write1.gif
+/icons/write.gif
+/interface/.DS_Store
+/interface/__pycache__
+/interface/mainF.py
+/interface/mainF1.py
+/interface/trial.py
